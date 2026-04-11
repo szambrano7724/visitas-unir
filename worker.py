@@ -7,7 +7,7 @@ from datetime import datetime
 # Instalar navegador (seguro en Render)
 os.system("playwright install chromium")
 
-URL = "TU_URL_AQUI"
+URL = "https://sites.google.com/view/samuymau"
 
 def dentro_horario():
     ahora = datetime.now().time()
