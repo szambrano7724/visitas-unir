@@ -1,58 +1,44 @@
 from playwright.sync_api import sync_playwright
-import subprocess
 import os
-
-# Instalar navegador si no existe
-os.system("playwright install chromium")
-
 import time
 import random
 from datetime import datetime
-from playwright.sync_api import sync_playwright
 
-URL = "https://sites.google.com/view/samuymau"
+# Instalar navegador (seguro en Render)
+os.system("playwright install chromium")
 
-inicio_global = datetime(2026, 4, 10, 13, 39)
-fin_global = datetime(2026, 4, 13, 15, 45)
-
-hora_inicio = (7, 45)
-hora_fin = (22, 45)
+URL = "TU_URL_AQUI"
 
 def dentro_horario():
-    ahora = datetime.now()
-    if ahora < inicio_global or ahora > fin_global:
-        return False
+    ahora = datetime.now().time()
+    return ahora >= datetime.strptime("07:45", "%H:%M").time() and ahora <= datetime.strptime("22:45", "%H:%M").time()
 
-    actual = ahora.hour*60 + ahora.minute
-    inicio = hora_inicio[0]*60 + hora_inicio[1]
-    fin = hora_fin[0]*60 + hora_fin[1]
-
-    return inicio <= actual <= fin
-
-
-def simular():
+def simular_visita():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
+        print("➡️ Visitando página...")
         page.goto(URL)
-        time.sleep(random.randint(5, 10))
 
-        duracion = random.randint(180, 240)
+        duracion = random.randint(180, 240)  # 3 a 4 min
+
         inicio = time.time()
-
         while time.time() - inicio < duracion:
-            page.mouse.wheel(0, random.randint(200, 800))
-            time.sleep(random.randint(3, 6))
+            scroll = random.randint(200, 800)
+            page.mouse.wheel(0, scroll)
+            time.sleep(random.randint(5, 15))
 
         browser.close()
+        print("✅ Visita terminada")
 
-
+# 🔁 LOOP INFINITO (LO QUE FALTABA)
 while True:
     if dentro_horario():
-        print("👤 visita nube")
-        simular()
-        time.sleep(random.randint(800, 1000))
+        simular_visita()
+        espera = random.randint(600, 900)  # 10 a 15 min
+        print(f"⏳ Esperando {espera/60:.1f} minutos...")
+        time.sleep(espera)
     else:
-        print("⏸ fuera horario")
+        print("🌙 Fuera de horario...")
         time.sleep(300)
