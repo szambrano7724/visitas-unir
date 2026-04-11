@@ -1,3 +1,10 @@
+from playwright.sync_api import sync_playwright
+import subprocess
+import os
+
+# Instalar navegador si no existe
+os.system("playwright install chromium")
+
 import time
 import random
 from datetime import datetime
