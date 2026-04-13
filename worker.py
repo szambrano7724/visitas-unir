@@ -1,44 +1,42 @@
-from playwright.sync_api import sync_playwright
-import os
-import time
+import asyncio
+from playwright.async_api import async_playwright
 import random
-from datetime import datetime
-
-# Instalar navegador (seguro en Render)
-os.system("playwright install chromium")
 
 URL = "https://sites.google.com/view/samuymau"
 
-def dentro_horario():
-    ahora = datetime.now().time()
-    return ahora >= datetime.strptime("07:45", "%H:%M").time() and ahora <= datetime.strptime("22:45", "%H:%M").time()
-
-def simular_visita():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+async def simular():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        context = await browser.new_context(
+            viewport={"width": 1280, "height": 720}
+        )
+        page = await context.new_page()
 
         print("➡️ Visitando página...")
-        page.goto(URL)
+        await page.goto(URL)
 
-        duracion = random.randint(180, 240)  # 3 a 4 min
+        # Espera inicial (muy importante)
+        await page.wait_for_timeout(random.randint(8000, 12000))
 
-        inicio = time.time()
-        while time.time() - inicio < duracion:
-            scroll = random.randint(200, 800)
-            page.mouse.wheel(0, scroll)
-            time.sleep(random.randint(5, 15))
+        # Scroll humano
+        for _ in range(random.randint(3, 6)):
+            await page.mouse.wheel(0, random.randint(500, 1200))
+            await page.wait_for_timeout(random.randint(2000, 4000))
 
-        browser.close()
-        print("✅ Visita terminada")
+        # Tiempo final
+        await page.wait_for_timeout(random.randint(5000, 10000))
 
-# 🔁 LOOP INFINITO (LO QUE FALTABA)
-while True:
-    if dentro_horario():
-        simular_visita()
-        espera = random.randint(600, 900)  # 10 a 15 min
-        print(f"⏳ Esperando {espera/60:.1f} minutos...")
-        time.sleep(espera)
-    else:
-        print("🌙 Fuera de horario...")
-        time.sleep(300)
+        print("✔️ Visita completada")
+        await browser.close()
+
+
+async def main():
+    while True:
+        await simular()
+
+        # Espera entre visitas (15 min aprox)
+        espera = random.randint(800, 1000)
+        print(f"⏳ Esperando {espera} segundos...")
+        await asyncio.sleep(espera)
+
+asyncio.run(main())
